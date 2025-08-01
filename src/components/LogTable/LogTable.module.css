@@ -1,0 +1,46 @@
+.logTableContainer {
+  margin-top: 5px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  height: 300px;
+  width: 100%;
+  max-width: 400px;
+  overflow-y: auto;
+}
+
+.logTableContainer h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.logTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.logTable th {
+  background: #f8f9fa;
+  padding: 12px 8px;
+  text-align: left;
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+  color: #495057;
+}
+
+.logTable td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #e9ecef;
+  color: #6c757d;
+}
+
+.logTable tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.logTable th:hover {
+  background: #e9ecef;
+  transition: background-color 0.2s ease;
+}

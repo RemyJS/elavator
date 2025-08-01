@@ -1,0 +1,124 @@
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.controlButton {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.controlButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.controlButton.active {
+  background: linear-gradient(135deg, #00b894, #00a085);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(0, 185, 148, 0.4);
+  }
+  100% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.instructions {
+  background: linear-gradient(120deg, #e3e9f7 0%, #f8fafc 100%);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 20px;
+  margin-top: 20px;
+  color: #343a40;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.instructions h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #495057;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.instructions h4 {
+  margin-top: 16px;
+  margin-bottom: 8px;
+  color: #495057;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.instructions p {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+}
+
+.appLayout {
+  gap: 24px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.logTableContainer {
+  margin: 0;
+  max-width: 420px;
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.logStats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  font-size: 13px;
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 12px;
+}
+
+.logStats span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

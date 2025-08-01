@@ -1,0 +1,102 @@
+/* Основной стиль пассажира */
+.passenger {
+  height: 38px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 0 8px;
+  border: 2px solid transparent;
+}
+
+/* Эффект наведения на пассажира */
+.passenger:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Общие стили для контента */
+.elevatorContent,
+.waitingContent,
+.arrivedContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+  width: 100%;
+}
+
+/* ID пассажира */
+.passengerId {
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0.9;
+  line-height: 1;
+}
+
+/* Целевой этаж */
+.targetFloor {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* Время в пути */
+.travelTime {
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0.8;
+  line-height: 1;
+}
+
+/* Ожидающие пассажиры */
+.waiting {
+  border-color: #28a745;
+  animation: waiting-pulse 2s infinite;
+}
+
+/* Прибывшие пассажиры */
+.arrived {
+  border-color: #6c757d;
+  opacity: 0.9;
+}
+
+/* Пассажиры в лифте */
+.elevator {
+  min-width: 26px;
+  height: 32px;
+  font-size: 14px;
+  font-weight: bold;
+  border-color: #343a40;
+  border-radius: 4px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.elevator .targetFloor {
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+@keyframes waiting-pulse {
+  0% {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.4);
+  }
+  100% {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
