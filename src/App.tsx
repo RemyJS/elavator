@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useElevator } from './hooks/useElevator';
 import Building from './components/Building';
 import LogTable, { type LogEntry, type SortConfig } from './components/LogTable';
