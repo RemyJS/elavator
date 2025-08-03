@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
+import { getTravelTimeEmoji } from '../../utils/helpers';
 import styles from './LogTable.module.css';
 
 export interface LogEntry {
@@ -23,6 +24,19 @@ export interface LogTableProps {
 }
 
 const LogTable: React.FC<LogTableProps> = ({ log, sort, setSort }) => {
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  // Автоскролл к последним записям при добавлении новых
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (tableRef.current) {
+        tableRef.current.scrollTop = tableRef.current.scrollHeight;
+      }
+    }, 100); // Небольшая задержка для плавности
+
+    return () => clearTimeout(timer);
+  }, [log.length]); // Срабатывает при изменении количества записей
+
   const sortedLog = React.useMemo(() => {
     const sorted = [...log];
     sorted.sort((a, b) => {
@@ -46,7 +60,7 @@ const LogTable: React.FC<LogTableProps> = ({ log, sort, setSort }) => {
   };
 
   return (
-    <div className={styles.logTableContainer}>
+    <div className={styles.logTableContainer} ref={tableRef}>
       <h3>Статистика перевозок</h3>
       <table className={styles.logTable}>
         <thead>
@@ -64,15 +78,25 @@ const LogTable: React.FC<LogTableProps> = ({ log, sort, setSort }) => {
           </tr>
         </thead>
         <tbody>
-          {sortedLog.map((entry) => (
-            <tr key={`${entry.createdAt}-${entry.id}`}>
-              <td>{entry.order + 1}</td>
-              <td>{entry.passengerId}</td>
-              <td>{entry.from}</td>
-              <td>{entry.to}</td>
-              <td>{entry.travelTime}</td>
-            </tr>
-          ))}
+          {sortedLog.map((entry, index) => {
+            const emoji = getTravelTimeEmoji(entry.travelTime);
+            const isNewEntry = index === sortedLog.length - 1; // Последняя запись - новая
+
+            return (
+              <tr
+                key={`${entry.createdAt}-${entry.id}`}
+                className={isNewEntry ? styles.newEntry : ''}
+              >
+                <td>{entry.order + 1}</td>
+                <td>{entry.passengerId}</td>
+                <td>{entry.from}</td>
+                <td>{entry.to}</td>
+                <td>
+                  {entry.travelTime}с {emoji}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

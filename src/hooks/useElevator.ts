@@ -39,7 +39,10 @@ const createInitialBuilding = (): BuildingState => {
 };
 
 // Чистые функции для обновления состояния
-const addPassengerToFloor = (building: BuildingState, floorNumber: number): BuildingState => {
+export const addPassengerToFloor = (
+  building: BuildingState,
+  floorNumber: number,
+): BuildingState => {
   const floor = building.floors.get(floorNumber);
   if (!floor) return building;
 
@@ -74,7 +77,7 @@ const addPassengerToFloor = (building: BuildingState, floorNumber: number): Buil
   };
 };
 
-const pickupPassengers = (building: BuildingState, floorNumber: number): BuildingState => {
+export const pickupPassengers = (building: BuildingState, floorNumber: number): BuildingState => {
   const floor = building.floors.get(floorNumber);
   if (!floor) return building;
 
@@ -104,7 +107,7 @@ const pickupPassengers = (building: BuildingState, floorNumber: number): Buildin
   };
 };
 
-const dropOffPassengers = (building: BuildingState, floorNumber: number): BuildingState => {
+export const dropOffPassengers = (building: BuildingState, floorNumber: number): BuildingState => {
   const dropOff = building.elevator.passengers.filter((p) => p.targetFloor === floorNumber);
   if (dropOff.length === 0) return building;
 
@@ -143,7 +146,7 @@ const dropOffPassengers = (building: BuildingState, floorNumber: number): Buildi
   };
 };
 
-const moveElevator = (building: BuildingState, targetFloor: number): BuildingState => {
+export const moveElevator = (building: BuildingState, targetFloor: number): BuildingState => {
   return {
     ...building,
     elevator: {
@@ -153,7 +156,7 @@ const moveElevator = (building: BuildingState, targetFloor: number): BuildingSta
   };
 };
 
-const updateElevatorState = (
+export const updateElevatorState = (
   building: BuildingState,
   updates: Partial<BuildingState['elevator']>,
 ): BuildingState => {

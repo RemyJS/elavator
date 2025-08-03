@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Passenger as PassengerType } from '../../types/elevator';
+import { getTravelTimeEmoji } from '../../utils/helpers';
 import styles from './Passenger.module.css';
 
 interface PassengerProps {
@@ -41,10 +42,14 @@ const Passenger: React.FC<PassengerProps> = ({ passenger, variant }) => {
       case 'arrived': {
         // Прибыл - ID сверху, время в пути снизу
         const travelTime = passenger.travelTime || 0;
+        const emoji = getTravelTimeEmoji(travelTime);
+
         return (
           <div className={styles.arrivedContent}>
             <div className={styles.passengerId}>#{passenger.id}</div>
-            <div className={styles.travelTime}>{travelTime}с</div>
+            <div className={styles.travelTime}>
+              {travelTime}с {emoji}
+            </div>
           </div>
         );
       }
@@ -59,7 +64,9 @@ const Passenger: React.FC<PassengerProps> = ({ passenger, variant }) => {
       return `Пассажир #${passenger.id} едет на ${passenger.targetFloor} этаж`;
     }
     if (variant === 'arrived') {
-      return `Прибыл с ${passenger.currentFloor} этажа за ${passenger.travelTime || 0} сек`;
+      const travelTime = passenger.travelTime || 0;
+      const emoji = getTravelTimeEmoji(travelTime);
+      return `Прибыл с ${passenger.currentFloor} этажа за ${travelTime} сек ${emoji}`;
     }
     return `Пассажир #${passenger.id} с этажа ${passenger.currentFloor} → ${passenger.targetFloor}`;
   };

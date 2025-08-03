@@ -41,6 +41,17 @@ export const calculatePassengerTime = (createdAt: number): number => {
   return Date.now() - createdAt;
 };
 
+// Определяем смайлик в зависимости от времени в пути
+export const getTravelTimeEmoji = (travelTime: number): string => {
+  if (travelTime <= 30) {
+    return '😃'; // доволен (до 30 сек)
+  } else if (travelTime <= 60) {
+    return '😐'; // нейтральный (30-60 сек)
+  } else {
+    return '😠'; // недоволен (больше минуты)
+  }
+};
+
 // Определяем ближайший целевой этаж для лифта
 export const getNextTargetFloor = (
   currentFloor: number,
