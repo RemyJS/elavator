@@ -11,6 +11,12 @@ interface BuildingProps {
 }
 
 const Building: React.FC<BuildingProps> = ({ building, onCallElevator }) => {
+  // Подсчитываем общее количество пассажиров во всех лифтах
+  const totalPassengersInElevators = building.elevators.reduce(
+    (total, elevator) => total + elevator.passengers.length,
+    0,
+  );
+
   return (
     <div className={styles.building}>
       <div className={styles.buildingTitle}>
@@ -18,14 +24,20 @@ const Building: React.FC<BuildingProps> = ({ building, onCallElevator }) => {
         <div className={styles.buildingStats}>
           <span>Всего пассажиров: {building.statistics.totalPassengers}</span>
           <span>
-            Пассажиров в лифте: {building.elevator.passengers.length}/
-            {BUILDING_CONFIG.MAX_PASSENGERS_IN_ELEVATOR}
+            Пассажиров в лифтах: {totalPassengersInElevators}/
+            {BUILDING_CONFIG.MAX_PASSENGERS_IN_ELEVATOR * building.elevators.length}
           </span>
         </div>
       </div>
 
       <div className={styles.buildingContainer}>
-        <Elevator elevator={building.elevator} building={building} />
+        <div className={styles.elevatorsContainer}>
+          {building.elevators.map((elevator) => (
+            <div key={elevator.id} className={styles.elevatorShaft}>
+              <Elevator elevator={elevator} building={building} />
+            </div>
+          ))}
+        </div>
         <div className={styles.floorsContainer}>
           {Array.from(building.floors.values()).map((floor) => (
             <Floor key={floor.number} floor={floor} onCallElevator={onCallElevator} />

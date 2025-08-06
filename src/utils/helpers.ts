@@ -23,6 +23,13 @@ export const getFloorColor = (floorNumber: number): string => {
   return floorColors[floorNumber - 1] || '#8A2BE2';
 };
 
+// Цвет фона этажа с прозрачностью 30% (4d)
+export const getFloorBackgroundColor = (floorNumber: number): string => {
+  const baseColor = getFloorColor(floorNumber);
+  // Добавляем прозрачность 30% (4d) к базовому цвету
+  return baseColor + '4d';
+};
+
 export const getRandomTargetFloor = (currentFloor: number): number => {
   const floors = Array.from({ length: 9 }, (_, i) => i + 1).filter(
     (floor) => floor !== currentFloor,

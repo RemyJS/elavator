@@ -32,7 +32,9 @@ const Elevator: React.FC<ElevatorProps> = ({ elevator, building }) => {
   return (
     <div className={styles.elevatorContainer}>
       <div
-        className={`${styles.elevator} ${elevator.isMoving ? styles.moving : ''}`}
+        className={`${styles.elevator} ${elevator.isMoving ? styles.moving : ''} ${
+          !elevator.isEnabled ? styles.disabled : ''
+        }`}
         style={elevatorStyle}
       >
         <div className={styles.elevatorIndicator}>
@@ -43,9 +45,15 @@ const Elevator: React.FC<ElevatorProps> = ({ elevator, building }) => {
             <div className={styles.targetFloor}>{nextTarget.toString().padStart(2, '0')}</div>
           )}
           <div className={styles.directionIndicator}>
-            {elevator.direction === 'up' && '\u2b06\ufe0f'}
-            {elevator.direction === 'down' && '\u2b07\ufe0f'}
-            {elevator.direction === 'idle' && '\u23f8\ufe0f'}
+            {!elevator.isEnabled ? (
+              '🚫'
+            ) : (
+              <>
+                {elevator.direction === 'up' && '\u2b06\ufe0f'}
+                {elevator.direction === 'down' && '\u2b07\ufe0f'}
+                {elevator.direction === 'idle' && '\u23f8\ufe0f'}
+              </>
+            )}
           </div>
         </div>
         <div className={styles.elevatorPassengers}>

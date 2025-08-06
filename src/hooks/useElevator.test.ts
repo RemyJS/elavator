@@ -31,6 +31,7 @@ const createMockFloor = (
   waitingPassengers: waiting,
   arrivedPassengers: arrived,
   isCalling: waiting.length > 0,
+  assignedCalls: [],
 });
 
 const createMockBuilding = (): BuildingState => {
@@ -42,12 +43,26 @@ const createMockBuilding = (): BuildingState => {
 
   return {
     floors,
-    elevator: {
-      currentFloor: 1,
-      direction: 'idle',
-      passengers: [],
-      isMoving: false,
-    },
+    elevators: [
+      {
+        id: 'elevator-1',
+        currentFloor: 1,
+        direction: 'idle',
+        passengers: [],
+        isMoving: false,
+        assignedFloors: [],
+        isEnabled: true,
+      },
+      {
+        id: 'elevator-2',
+        currentFloor: BUILDING_CONFIG.TOTAL_FLOORS,
+        direction: 'idle',
+        passengers: [],
+        isMoving: false,
+        assignedFloors: [],
+        isEnabled: true,
+      },
+    ],
     statistics: {
       totalPassengers: 0,
       completedTrips: 0,
@@ -104,7 +119,7 @@ describe('Elevator Pure Functions', () => {
   });
 
   describe('pickupPassengers', () => {
-    it('should pickup passengers when elevator has space', () => {
+    it('should pickup passengers from floor', () => {
       const floorNumber = 3;
       const passengers = [
         createMockPassenger('passenger-1', floorNumber, 5),
@@ -114,9 +129,9 @@ describe('Elevator Pure Functions', () => {
       const floorWithPassengers = createMockFloor(floorNumber, passengers);
       building.floors.set(floorNumber, floorWithPassengers);
 
-      const result = pickupPassengers(building, floorNumber);
+      const result = pickupPassengers(building, 'elevator-1', floorNumber);
       const updatedFloor = result.floors.get(floorNumber)!;
-      const updatedElevator = result.elevator;
+      const updatedElevator = result.elevators[0];
 
       expect(updatedFloor.waitingPassengers.length).toBe(0);
       expect(updatedElevator.passengers.length).toBe(2);
@@ -129,13 +144,13 @@ describe('Elevator Pure Functions', () => {
       const floorWithPassengers = createMockFloor(floorNumber, passengers);
 
       building.floors.set(floorNumber, floorWithPassengers);
-      building.elevator.passengers = Array(BUILDING_CONFIG.MAX_PASSENGERS_IN_ELEVATOR)
+      building.elevators[0].passengers = Array(BUILDING_CONFIG.MAX_PASSENGERS_IN_ELEVATOR)
         .fill(null)
         .map((_, i) => createMockPassenger(`elevator-passenger-${i}`, 1, 5));
 
-      const result = pickupPassengers(building, floorNumber);
+      const result = pickupPassengers(building, 'elevator-1', floorNumber);
       const updatedFloor = result.floors.get(floorNumber)!;
-      const updatedElevator = result.elevator;
+      const updatedElevator = result.elevators[0];
 
       expect(updatedFloor.waitingPassengers.length).toBe(1); // Не изменилось
       expect(updatedElevator.passengers.length).toBe(BUILDING_CONFIG.MAX_PASSENGERS_IN_ELEVATOR);
@@ -144,9 +159,9 @@ describe('Elevator Pure Functions', () => {
     it('should not pickup from empty floor', () => {
       const floorNumber = 3;
 
-      const result = pickupPassengers(building, floorNumber);
+      const result = pickupPassengers(building, 'elevator-1', floorNumber);
       const updatedFloor = result.floors.get(floorNumber)!;
-      const updatedElevator = result.elevator;
+      const updatedElevator = result.elevators[0];
 
       expect(updatedFloor.waitingPassengers.length).toBe(0);
       expect(updatedElevator.passengers.length).toBe(0);
@@ -161,11 +176,11 @@ describe('Elevator Pure Functions', () => {
         createMockPassenger('passenger-2', 7, floorNumber),
       ];
 
-      building.elevator.passengers = passengers;
+      building.elevators[0].passengers = passengers;
 
-      const result = dropOffPassengers(building, floorNumber);
+      const result = dropOffPassengers(building, 'elevator-1', floorNumber);
       const updatedFloor = result.floors.get(floorNumber)!;
-      const updatedElevator = result.elevator;
+      const updatedElevator = result.elevators[0];
 
       expect(updatedFloor.arrivedPassengers.length).toBe(2);
       expect(updatedElevator.passengers.length).toBe(0);
@@ -178,11 +193,11 @@ describe('Elevator Pure Functions', () => {
         createMockPassenger('passenger-1', 3, 7), // Цель не floorNumber
       ];
 
-      building.elevator.passengers = passengers;
+      building.elevators[0].passengers = passengers;
 
-      const result = dropOffPassengers(building, floorNumber);
+      const result = dropOffPassengers(building, 'elevator-1', floorNumber);
       const updatedFloor = result.floors.get(floorNumber)!;
-      const updatedElevator = result.elevator;
+      const updatedElevator = result.elevators[0];
 
       expect(updatedFloor.arrivedPassengers.length).toBe(0);
       expect(updatedElevator.passengers.length).toBe(1);
@@ -193,9 +208,9 @@ describe('Elevator Pure Functions', () => {
       const passenger = createMockPassenger('passenger-1', 3, floorNumber);
       passenger.createdAt = Date.now() - 5000; // 5 секунд назад
 
-      building.elevator.passengers = [passenger];
+      building.elevators[0].passengers = [passenger];
 
-      const result = dropOffPassengers(building, floorNumber);
+      const result = dropOffPassengers(building, 'elevator-1', floorNumber);
       const updatedFloor = result.floors.get(floorNumber)!;
       const arrivedPassenger = updatedFloor.arrivedPassengers[0];
 
@@ -207,10 +222,10 @@ describe('Elevator Pure Functions', () => {
   describe('moveElevator', () => {
     it('should move elevator to target floor', () => {
       const targetFloor = 5;
-      const initialFloor = building.elevator.currentFloor;
+      const initialFloor = building.elevators[0].currentFloor;
 
-      const result = moveElevator(building, targetFloor);
-      const updatedElevator = result.elevator;
+      const result = moveElevator(building, 'elevator-1', targetFloor);
+      const updatedElevator = result.elevators[0];
 
       expect(updatedElevator.currentFloor).toBe(targetFloor);
       expect(initialFloor).not.toBe(targetFloor);
@@ -218,14 +233,14 @@ describe('Elevator Pure Functions', () => {
   });
 
   describe('updateElevatorState', () => {
-    it('should update elevator state with partial updates', () => {
+    it('should update elevator state', () => {
       const updates = {
         direction: 'up' as const,
         isMoving: true,
       };
 
-      const result = updateElevatorState(building, updates);
-      const updatedElevator = result.elevator;
+      const result = updateElevatorState(building, 'elevator-1', updates);
+      const updatedElevator = result.elevators[0];
 
       expect(updatedElevator.direction).toBe('up');
       expect(updatedElevator.isMoving).toBe(true);

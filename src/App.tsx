@@ -11,6 +11,7 @@ function App() {
   const [passengerLog, setPassengerLog] = useState<LogEntry[]>([]);
   const [sort, setSort] = useState<SortConfig>({ field: 'order', direction: 'asc' });
   const [autoSpawn, setAutoSpawn] = useState(false);
+  const [autoSpawnInterval, setAutoSpawnInterval] = useState(1000); // Интервал в мс
   const [averageTravelTime, setAverageTravelTime] = useState<number>(0);
 
   // Константа для максимального размера лога
@@ -45,7 +46,8 @@ function App() {
     });
   }, []);
 
-  const { building, callElevator, isRunning, setIsRunning } = useElevator(handlePassengerArrived);
+  const { building, callElevator, isRunning, setIsRunning, toggleElevator } =
+    useElevator(handlePassengerArrived);
 
   // Синхронизация CSS переменных с конфигурацией
   useEffect(() => {
@@ -62,15 +64,14 @@ function App() {
 
   // Автоспавн пассажиров
   useEffect(() => {
-    const AUTO_SPAWN_INTERVAL = 2000;
     if (!autoSpawn) return;
 
     const interval = setInterval(() => {
       spawnRandomPassenger();
-    }, AUTO_SPAWN_INTERVAL);
+    }, autoSpawnInterval);
 
     return () => clearInterval(interval);
-  }, [autoSpawn, spawnRandomPassenger]);
+  }, [autoSpawn, autoSpawnInterval, spawnRandomPassenger]);
 
   return (
     <div className={styles.appLayout}>
@@ -97,6 +98,18 @@ function App() {
             >
               {autoSpawn ? '🔄 Авто ВКЛ' : '⏹️ Авто ВЫКЛ'}
             </button>
+            {autoSpawn && (
+              <select
+                value={autoSpawnInterval}
+                onChange={(e) => setAutoSpawnInterval(Number(e.target.value))}
+                className={styles.selectControl}
+              >
+                <option value={500}>⚡ Быстро (0.5с)</option>
+                <option value={1000}>🚶 Обычно (1с)</option>
+                <option value={2000}>🐌 Медленно (2с)</option>
+                <option value={3000}>🦥 Очень медленно (3с)</option>
+              </select>
+            )}
             <button
               onClick={() => {
                 setPassengerLog([]);
@@ -106,6 +119,20 @@ function App() {
               title="Очистить лог"
             >
               🗑️ Очистить лог
+            </button>
+            <button
+              onClick={() => toggleElevator('elevator-1')}
+              className={`${styles.controlButton} ${!building.elevators[0].isEnabled ? styles.disabled : ''}`}
+              title="Переключить лифт 1"
+            >
+              {building.elevators[0].isEnabled ? '⚡ Лифт 1 ВКЛ' : '🚫 Лифт 1 ВЫКЛ'}
+            </button>
+            <button
+              onClick={() => toggleElevator('elevator-2')}
+              className={`${styles.controlButton} ${!building.elevators[1].isEnabled ? styles.disabled : ''}`}
+              title="Переключить лифт 2"
+            >
+              {building.elevators[1].isEnabled ? '⚡ Лифт 2 ВКЛ' : '🚫 Лифт 2 ВЫКЛ'}
             </button>
           </div>
           <h3>Управление:</h3>

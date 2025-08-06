@@ -23,26 +23,31 @@
 
 /* Корпус лифта */
 .elevator {
-  background: linear-gradient(135deg, #6c757d, #495057);
-  border: 3px solid #343a40;
-  border-radius: 8px;
-  overflow: hidden;
-  z-index: 10;
-  width: 190px;
-  height: 75px;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
   position: absolute;
   left: 50%;
   top: 0;
-  transform: translateX(-50%);
-  will-change: transform;
+  width: 190px;
+  height: 65px;
+  background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+  border: 2px solid #2c5aa0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px;
+  z-index: 10;
 }
 
-/* Анимация движения лифта */
-.moving {
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+.elevator.disabled {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  border-color: #495057;
+  opacity: 0.7;
+  filter: grayscale(50%);
+}
+
+.elevator.moving {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 /* Пассажиры внутри лифта */

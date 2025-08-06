@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { BuildingState, Passenger, Floor } from '../types/elevator';
+import type { BuildingState, Passenger, Floor, ElevatorState } from '../types/elevator';
 import { BUILDING_CONFIG } from '../utils/constants';
 import { getFloorColor, getRandomTargetFloor } from '../utils/helpers';
 
@@ -19,17 +19,35 @@ const createInitialBuilding = (): BuildingState => {
       waitingPassengers: [],
       arrivedPassengers: [],
       isCalling: false,
+      assignedCalls: [],
     });
   }
 
-  return {
-    floors,
-    elevator: {
+  // Создаем два лифта с уникальными ID
+  const elevators: ElevatorState[] = [
+    {
+      id: 'elevator-1',
       currentFloor: 1,
       direction: 'idle',
       passengers: [],
       isMoving: false,
+      assignedFloors: [],
+      isEnabled: true,
     },
+    {
+      id: 'elevator-2',
+      currentFloor: BUILDING_CONFIG.TOTAL_FLOORS, // Второй лифт начинает с верхнего этажа
+      direction: 'idle',
+      passengers: [],
+      isMoving: false,
+      assignedFloors: [],
+      isEnabled: true,
+    },
+  ];
+
+  return {
+    floors,
+    elevators,
     statistics: {
       totalPassengers: 0,
       completedTrips: 0,
@@ -39,6 +57,79 @@ const createInitialBuilding = (): BuildingState => {
 };
 
 // Чистые функции для обновления состояния
+export const assignCallToElevator = (
+  building: BuildingState,
+  floorNumber: number,
+  elevatorId: string,
+): BuildingState => {
+  const floor = building.floors.get(floorNumber);
+  if (!floor) return building;
+
+  // Если вызов уже назначен этому лифту, ничего не делаем
+  if (floor.assignedCalls.includes(elevatorId)) return building;
+
+  const newFloor = {
+    ...floor,
+    assignedCalls: [...floor.assignedCalls, elevatorId],
+  };
+
+  const newFloors = new Map(building.floors);
+  newFloors.set(floorNumber, newFloor);
+
+  const newElevators = building.elevators.map((e) =>
+    e.id === elevatorId ? { ...e, assignedFloors: [...e.assignedFloors, floorNumber] } : e,
+  );
+
+  return {
+    ...building,
+    floors: newFloors,
+    elevators: newElevators,
+  };
+};
+
+export const removeCallAssignment = (
+  building: BuildingState,
+  floorNumber: number,
+  elevatorId: string,
+): BuildingState => {
+  const floor = building.floors.get(floorNumber);
+  if (!floor) return building;
+
+  const newFloor = {
+    ...floor,
+    assignedCalls: floor.assignedCalls.filter((id) => id !== elevatorId),
+  };
+
+  const newFloors = new Map(building.floors);
+  newFloors.set(floorNumber, newFloor);
+
+  const newElevators = building.elevators.map((e) =>
+    e.id === elevatorId
+      ? { ...e, assignedFloors: e.assignedFloors.filter((f) => f !== floorNumber) }
+      : e,
+  );
+
+  return {
+    ...building,
+    floors: newFloors,
+    elevators: newElevators,
+  };
+};
+
+export const toggleElevator = (building: BuildingState, elevatorId: string): BuildingState => {
+  const elevator = building.elevators.find((e) => e.id === elevatorId);
+  if (!elevator) return building;
+
+  const newElevators = building.elevators.map((e) =>
+    e.id === elevatorId ? { ...e, isEnabled: !e.isEnabled } : e,
+  );
+
+  return {
+    ...building,
+    elevators: newElevators,
+  };
+};
+
 export const addPassengerToFloor = (
   building: BuildingState,
   floorNumber: number,
@@ -77,12 +168,18 @@ export const addPassengerToFloor = (
   };
 };
 
-export const pickupPassengers = (building: BuildingState, floorNumber: number): BuildingState => {
+export const pickupPassengers = (
+  building: BuildingState,
+  elevatorId: string,
+  floorNumber: number,
+): BuildingState => {
   const floor = building.floors.get(floorNumber);
   if (!floor) return building;
 
-  const availableSpace =
-    BUILDING_CONFIG.MAX_PASSENGERS_IN_ELEVATOR - building.elevator.passengers.length;
+  const elevator = building.elevators.find((e) => e.id === elevatorId);
+  if (!elevator) return building;
+
+  const availableSpace = BUILDING_CONFIG.MAX_PASSENGERS_IN_ELEVATOR - elevator.passengers.length;
   if (availableSpace <= 0 || floor.waitingPassengers.length === 0) return building;
 
   const toPickup = floor.waitingPassengers.slice(0, availableSpace);
@@ -92,23 +189,38 @@ export const pickupPassengers = (building: BuildingState, floorNumber: number): 
     ...floor,
     waitingPassengers: remainingWaiting,
     isCalling: remainingWaiting.length > 0,
+    assignedCalls: floor.assignedCalls.filter((id) => id !== elevatorId), // Удаляем назначение
   };
 
   const newFloors = new Map(building.floors);
   newFloors.set(floorNumber, newFloor);
 
+  const newElevators = building.elevators.map((e) =>
+    e.id === elevatorId
+      ? {
+          ...e,
+          passengers: [...e.passengers, ...toPickup],
+          assignedFloors: e.assignedFloors.filter((f) => f !== floorNumber), // Удаляем из назначенных
+        }
+      : e,
+  );
+
   return {
     ...building,
     floors: newFloors,
-    elevator: {
-      ...building.elevator,
-      passengers: [...building.elevator.passengers, ...toPickup],
-    },
+    elevators: newElevators,
   };
 };
 
-export const dropOffPassengers = (building: BuildingState, floorNumber: number): BuildingState => {
-  const dropOff = building.elevator.passengers.filter((p) => p.targetFloor === floorNumber);
+export const dropOffPassengers = (
+  building: BuildingState,
+  elevatorId: string,
+  floorNumber: number,
+): BuildingState => {
+  const elevator = building.elevators.find((e) => e.id === elevatorId);
+  if (!elevator) return building;
+
+  const dropOff = elevator.passengers.filter((p) => p.targetFloor === floorNumber);
   if (dropOff.length === 0) return building;
 
   const updatedPassengers = dropOff.map((p) => ({
@@ -128,13 +240,16 @@ export const dropOffPassengers = (building: BuildingState, floorNumber: number):
   const newFloors = new Map(building.floors);
   newFloors.set(floorNumber, newFloor);
 
+  const newElevators = building.elevators.map((e) =>
+    e.id === elevatorId
+      ? { ...e, passengers: e.passengers.filter((p) => p.targetFloor !== floorNumber) }
+      : e,
+  );
+
   return {
     ...building,
     floors: newFloors,
-    elevator: {
-      ...building.elevator,
-      passengers: building.elevator.passengers.filter((p) => p.targetFloor !== floorNumber),
-    },
+    elevators: newElevators,
     statistics: {
       ...building.statistics,
       completedTrips: building.statistics.completedTrips + dropOff.length,
@@ -146,26 +261,33 @@ export const dropOffPassengers = (building: BuildingState, floorNumber: number):
   };
 };
 
-export const moveElevator = (building: BuildingState, targetFloor: number): BuildingState => {
+export const moveElevator = (
+  building: BuildingState,
+  elevatorId: string,
+  targetFloor: number,
+): BuildingState => {
+  const newElevators = building.elevators.map((e) =>
+    e.id === elevatorId ? { ...e, currentFloor: targetFloor } : e,
+  );
+
   return {
     ...building,
-    elevator: {
-      ...building.elevator,
-      currentFloor: targetFloor,
-    },
+    elevators: newElevators,
   };
 };
 
 export const updateElevatorState = (
   building: BuildingState,
-  updates: Partial<BuildingState['elevator']>,
+  elevatorId: string,
+  updates: Partial<ElevatorState>,
 ): BuildingState => {
+  const newElevators = building.elevators.map((e) =>
+    e.id === elevatorId ? { ...e, ...updates } : e,
+  );
+
   return {
     ...building,
-    elevator: {
-      ...building.elevator,
-      ...updates,
-    },
+    elevators: newElevators,
   };
 };
 
@@ -180,145 +302,232 @@ export const useElevator = (onPassengerArrived?: (p: Passenger) => void) => {
   const processElevatorTick = useCallback(() => {
     setBuilding((prev) => {
       let currentBuilding = prev;
-      const { elevator, floors } = currentBuilding;
-      const currentFloor = elevator.currentFloor;
-      let direction = elevator.direction;
-      let nextFloor = currentFloor;
-      let stopped = false;
+      const { elevators, floors } = currentBuilding;
 
-      // === Высадка ===
-      const dropOff = elevator.passengers.filter((p) => p.targetFloor === currentFloor);
-      if (dropOff.length > 0) {
-        stopped = true;
-        currentBuilding = dropOffPassengers(currentBuilding, currentFloor);
+      // === Умное назначение вызовов ===
+      const unassignedCalls = Array.from(floors.values())
+        .filter((f) => f.isCalling && f.assignedCalls.length === 0)
+        .map((f) => f.number);
 
-        // Вызываем callback для каждого завершённого пассажира
-        if (onPassengerArrived) {
-          // Получаем обновленных пассажиров из dropOffPassengers
-          const updatedPassengers =
-            currentBuilding.floors.get(currentFloor)?.arrivedPassengers || [];
-          const justArrived = updatedPassengers.slice(-dropOff.length); // Последние добавленные
+      unassignedCalls.forEach((floorNumber) => {
+        // Находим лучший лифт для этого вызова
+        let bestElevator: ElevatorState | null = null;
+        let bestScore = Infinity;
 
-          console.log('justArrived', justArrived);
-          justArrived.forEach((passenger) => {
-            onPassengerArrived(passenger);
+        for (const elevator of elevators) {
+          // Если лифт полный или отключен, пропускаем
+          if (
+            elevator.passengers.length >= BUILDING_CONFIG.MAX_PASSENGERS_IN_ELEVATOR ||
+            !elevator.isEnabled
+          )
+            continue;
+
+          // Вычисляем расстояние до вызова
+          const distance = Math.abs(elevator.currentFloor - floorNumber);
+
+          // Бонус если лифт уже движется в нужном направлении
+          let directionBonus = 0;
+          if (elevator.direction === 'up' && floorNumber > elevator.currentFloor) {
+            directionBonus = -2; // Бонус за движение вверх к вызову выше
+          } else if (elevator.direction === 'down' && floorNumber < elevator.currentFloor) {
+            directionBonus = -2; // Бонус за движение вниз к вызову ниже
+          }
+
+          // Штраф за количество назначенных вызовов
+          const assignmentPenalty = elevator.assignedFloors.length * 3;
+
+          const score = distance + directionBonus + assignmentPenalty;
+
+          if (score < bestScore) {
+            bestScore = score;
+            bestElevator = elevator;
+          }
+        }
+
+        if (bestElevator) {
+          currentBuilding = assignCallToElevator(currentBuilding, floorNumber, bestElevator.id);
+        }
+      });
+
+      // Обрабатываем каждый лифт отдельно
+      elevators.forEach((elevator) => {
+        const currentFloor = elevator.currentFloor;
+        let direction = elevator.direction;
+        let nextFloor = currentFloor;
+        let stopped = false;
+        let isMoving = false;
+
+        // === Высадка ===
+        const dropOff = elevator.passengers.filter((p) => p.targetFloor === currentFloor);
+        if (dropOff.length > 0) {
+          stopped = true;
+          currentBuilding = dropOffPassengers(currentBuilding, elevator.id, currentFloor);
+
+          // Вызываем callback для каждого завершённого пассажира
+          if (onPassengerArrived) {
+            const updatedPassengers =
+              currentBuilding.floors.get(currentFloor)?.arrivedPassengers || [];
+            const justArrived = updatedPassengers.slice(-dropOff.length);
+
+            justArrived.forEach((passenger) => {
+              onPassengerArrived(passenger);
+            });
+          }
+        }
+
+        // === Посадка на текущем этаже (только для включенных лифтов) ===
+        if (elevator.isEnabled) {
+          const currentFloorData = floors.get(currentFloor);
+          if (currentFloorData && currentFloorData.waitingPassengers.length > 0) {
+            const availableSpace =
+              BUILDING_CONFIG.MAX_PASSENGERS_IN_ELEVATOR - elevator.passengers.length;
+            if (availableSpace > 0) {
+              currentBuilding = pickupPassengers(currentBuilding, elevator.id, currentFloor);
+              stopped = true;
+            }
+          }
+        }
+
+        // === Определение направления и целей ===
+        const deliveryTargets = elevator.passengers.map((p) => p.targetFloor);
+
+        if (elevator.isEnabled) {
+          // Для включенных лифтов - назначенные вызовы
+          const assignedCallTargets = elevator.assignedFloors;
+          const allTargets = [...new Set([...deliveryTargets, ...assignedCallTargets])];
+
+          // ПРОСТАЯ ЛОГИКА: Лифт движется если есть пассажиры ИЛИ есть назначенные вызовы
+          if (elevator.passengers.length > 0 || assignedCallTargets.length > 0) {
+            // Определяем направление движения
+            if (direction === 'idle') {
+              const upTargets = allTargets.filter((t) => t > currentFloor);
+              const downTargets = allTargets.filter((t) => t < currentFloor);
+
+              if (upTargets.length > 0 && downTargets.length > 0) {
+                const nearestUp = Math.min(...upTargets);
+                const nearestDown = Math.max(...downTargets);
+                const distanceUp = nearestUp - currentFloor;
+                const distanceDown = currentFloor - nearestDown;
+
+                if (distanceUp <= distanceDown) {
+                  direction = 'up';
+                } else {
+                  direction = 'down';
+                }
+              } else if (upTargets.length > 0) {
+                direction = 'up';
+              } else if (downTargets.length > 0) {
+                direction = 'down';
+              }
+            }
+
+            // Определяем следующий этаж
+            if (direction === 'up') {
+              const upTargets = allTargets.filter((t) => t > currentFloor);
+              if (upTargets.length > 0) {
+                nextFloor = Math.min(...upTargets);
+              } else {
+                const downTargets = allTargets.filter((t) => t < currentFloor);
+                if (downTargets.length > 0) {
+                  direction = 'down';
+                  nextFloor = Math.max(...downTargets);
+                }
+              }
+            } else if (direction === 'down') {
+              const downTargets = allTargets.filter((t) => t < currentFloor);
+              if (downTargets.length > 0) {
+                nextFloor = Math.max(...downTargets);
+              } else {
+                const upTargets = allTargets.filter((t) => t > currentFloor);
+                if (upTargets.length > 0) {
+                  direction = 'up';
+                  nextFloor = Math.min(...upTargets);
+                }
+              }
+            }
+
+            isMoving = true;
+          } else {
+            direction = 'idle';
+            isMoving = false;
+          }
+
+          // Двигаем лифт если не остановлен
+          if (!stopped && nextFloor !== currentFloor) {
+            currentBuilding = moveElevator(currentBuilding, elevator.id, nextFloor);
+          }
+
+          // Обновляем состояние лифта
+          currentBuilding = updateElevatorState(currentBuilding, elevator.id, {
+            direction,
+            isMoving,
+          });
+        } else {
+          // Для отключенных лифтов - только развозим пассажиров, потом едем на первый этаж
+          if (elevator.passengers.length > 0) {
+            // Есть пассажиры - развозим их
+            const allTargets = deliveryTargets;
+
+            if (direction === 'idle') {
+              const upTargets = allTargets.filter((t) => t > currentFloor);
+              const downTargets = allTargets.filter((t) => t < currentFloor);
+
+              if (upTargets.length > 0) {
+                direction = 'up';
+              } else if (downTargets.length > 0) {
+                direction = 'down';
+              }
+            }
+
+            if (direction === 'up') {
+              const upTargets = allTargets.filter((t) => t > currentFloor);
+              if (upTargets.length > 0) {
+                nextFloor = Math.min(...upTargets);
+              } else {
+                const downTargets = allTargets.filter((t) => t < currentFloor);
+                if (downTargets.length > 0) {
+                  direction = 'down';
+                  nextFloor = Math.max(...downTargets);
+                }
+              }
+            } else if (direction === 'down') {
+              const downTargets = allTargets.filter((t) => t < currentFloor);
+              if (downTargets.length > 0) {
+                nextFloor = Math.max(...downTargets);
+              } else {
+                const upTargets = allTargets.filter((t) => t > currentFloor);
+                if (upTargets.length > 0) {
+                  direction = 'up';
+                  nextFloor = Math.min(...upTargets);
+                }
+              }
+            }
+
+            isMoving = true;
+          } else {
+            // Нет пассажиров - едем на первый этаж
+            if (currentFloor > 1) {
+              direction = 'down';
+              nextFloor = 1;
+              isMoving = true;
+            } else {
+              direction = 'idle';
+              isMoving = false;
+            }
+          }
+
+          // Двигаем лифт если не остановлен
+          if (!stopped && nextFloor !== currentFloor) {
+            currentBuilding = moveElevator(currentBuilding, elevator.id, nextFloor);
+          }
+
+          // Обновляем состояние лифта
+          currentBuilding = updateElevatorState(currentBuilding, elevator.id, {
+            direction,
+            isMoving,
           });
         }
-      }
-
-      // === Посадка на текущем этаже ===
-      const currentFloorData = floors.get(currentFloor);
-      if (currentFloorData && currentFloorData.waitingPassengers.length > 0) {
-        const availableSpace =
-          BUILDING_CONFIG.MAX_PASSENGERS_IN_ELEVATOR - currentBuilding.elevator.passengers.length;
-        if (availableSpace > 0) {
-          currentBuilding = pickupPassengers(currentBuilding, currentFloor);
-          stopped = true;
-        }
-      }
-
-      // === Определение направления и целей ===
-      const deliveryTargets = currentBuilding.elevator.passengers.map((p) => p.targetFloor);
-      const callTargets = Array.from(currentBuilding.floors.values())
-        .filter((f) => f.isCalling)
-        .map((f) => f.number);
-      const allTargets = [...new Set([...deliveryTargets, ...callTargets])];
-
-      let isMoving = false;
-
-      // ПРОСТАЯ ЛОГИКА: Лифт движется если есть пассажиры ИЛИ есть вызовы
-      if (currentBuilding.elevator.passengers.length > 0 || callTargets.length > 0) {
-        // Определяем направление движения
-        if (direction === 'idle') {
-          const upTargets = allTargets.filter((t) => t > currentFloor);
-          const downTargets = allTargets.filter((t) => t < currentFloor);
-
-          if (upTargets.length > 0 && downTargets.length > 0) {
-            const nearestUp = Math.min(...upTargets);
-            const nearestDown = Math.max(...downTargets);
-            const distanceUp = nearestUp - currentFloor;
-            const distanceDown = currentFloor - nearestDown;
-
-            if (distanceUp <= distanceDown) {
-              direction = 'up';
-            } else {
-              direction = 'down';
-            }
-          } else if (upTargets.length > 0) {
-            direction = 'up';
-          } else if (downTargets.length > 0) {
-            direction = 'down';
-          }
-        }
-
-        // Определяем следующий этаж
-        if (direction === 'up') {
-          const upTargets = allTargets.filter((t) => t > currentFloor);
-          if (upTargets.length > 0) {
-            nextFloor = Math.min(...upTargets);
-          } else {
-            const downTargets = allTargets.filter((t) => t < currentFloor);
-            if (downTargets.length > 0) {
-              direction = 'down';
-              nextFloor = Math.max(...downTargets);
-            }
-          }
-        } else if (direction === 'down') {
-          const downTargets = allTargets.filter((t) => t < currentFloor);
-          if (downTargets.length > 0) {
-            nextFloor = Math.max(...downTargets);
-          } else {
-            const upTargets = allTargets.filter((t) => t > currentFloor);
-            if (upTargets.length > 0) {
-              direction = 'up';
-              nextFloor = Math.min(...upTargets);
-            }
-          }
-        }
-
-        isMoving = true;
-      } else {
-        direction = 'idle';
-        isMoving = false;
-      }
-
-      // Двигаем лифт если не остановлен
-      if (!stopped && nextFloor !== currentFloor) {
-        currentBuilding = moveElevator(currentBuilding, nextFloor);
-      }
-
-      // Обновляем состояние лифта
-      currentBuilding = updateElevatorState(currentBuilding, { direction, isMoving });
-
-      // Отладочная информация
-      if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-        const upTargets = allTargets.filter((t) => t > currentFloor);
-        const downTargets = allTargets.filter((t) => t < currentFloor);
-        const nearestUp = upTargets.length > 0 ? Math.min(...upTargets) : null;
-        const nearestDown = downTargets.length > 0 ? Math.max(...downTargets) : null;
-        const distanceUp = nearestUp ? nearestUp - currentFloor : null;
-        const distanceDown = nearestDown ? currentFloor - nearestDown : null;
-
-        console.log('Elevator state:', {
-          currentFloor,
-          direction,
-          isMoving,
-          stopped,
-          nextFloor,
-          passengers: currentBuilding.elevator.passengers.length,
-          deliveryTargets,
-          callTargets,
-          allTargets,
-          upTargets,
-          downTargets,
-          nearestUp,
-          nearestDown,
-          distanceUp,
-          distanceDown,
-          shouldMove: currentBuilding.elevator.passengers.length > 0 || callTargets.length > 0,
-          willMove: !stopped && isMoving,
-        });
-      }
+      });
 
       return currentBuilding;
     });
@@ -339,5 +548,8 @@ export const useElevator = (onPassengerArrived?: (p: Passenger) => void) => {
     callElevator,
     isRunning,
     setIsRunning,
+    toggleElevator: (elevatorId: string) => {
+      setBuilding((prev) => toggleElevator(prev, elevatorId));
+    },
   };
 };

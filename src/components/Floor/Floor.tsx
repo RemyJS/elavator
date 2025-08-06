@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Floor as FloorType } from '../../types/elevator';
 import { BUILDING_CONFIG } from '../../utils/constants';
+import { getFloorBackgroundColor } from '../../utils/helpers';
 import Passenger from '../Passenger';
 import styles from './Floor.module.css';
 
@@ -14,9 +15,16 @@ const Floor: React.FC<FloorProps> = ({ floor, onCallElevator }) => {
   const waitingPassengers = floor.waitingPassengers;
   const arrivedPassengers = floor.arrivedPassengers;
   const canAddMore = waitingPassengers.length < 10;
+  const floorBackgroundColor = getFloorBackgroundColor(floor.number);
 
   return (
-    <div className={styles.floor} style={{ height: BUILDING_CONFIG.FLOOR_HEIGHT }}>
+    <div
+      className={styles.floor}
+      style={{
+        height: BUILDING_CONFIG.FLOOR_HEIGHT,
+        backgroundColor: floorBackgroundColor,
+      }}
+    >
       <div className={styles.floorContent}>
         {/* левая часть: номер этажа и кнопка вызова */}
         <div className={styles.floorNumberContainer}>

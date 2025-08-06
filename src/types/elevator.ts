@@ -13,13 +13,17 @@ export interface Floor {
   waitingPassengers: Passenger[]; // FIFO очередь ожидания
   arrivedPassengers: Passenger[]; // Прибывшие пассажиры
   isCalling: boolean;
+  assignedCalls: string[]; // ID лифтов, которым назначен этот вызов
 }
 
 export interface ElevatorState {
+  id: string; // Уникальный ID лифта
   currentFloor: number;
   direction: 'up' | 'down' | 'idle';
   passengers: Passenger[];
   isMoving: boolean;
+  assignedFloors: number[]; // Этажи, назначенные этому лифту
+  isEnabled: boolean; // Включен ли лифт
 }
 
 export interface ElevatorStatistics {
@@ -30,15 +34,6 @@ export interface ElevatorStatistics {
 
 export interface BuildingState {
   floors: Map<number, Floor>;
-  elevator: ElevatorState;
+  elevators: ElevatorState[]; // Массив лифтов
   statistics: ElevatorStatistics;
 }
-
-// Типы для reducer паттерна
-export type ElevatorAction =
-  | { type: 'CALL_ELEVATOR'; floorNumber: number }
-  | { type: 'MOVE_ELEVATOR'; targetFloor: number }
-  | { type: 'PICKUP_PASSENGERS'; floorNumber: number; passengers: Passenger[] }
-  | { type: 'DROP_OFF_PASSENGERS'; floorNumber: number; passengers: Passenger[] }
-  | { type: 'UPDATE_STATISTICS'; passenger: Passenger }
-  | { type: 'SET_ELEVATOR_STATE'; state: Partial<ElevatorState> };
