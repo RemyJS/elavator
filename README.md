@@ -6,7 +6,7 @@
 
 ### 📋 Описание проекта
 
-Интерактивная симуляция системы управления лифтами с реалистичной логикой и современным веб-интерфейсом. Проект демонстрирует применение React, TypeScript и алгоритмов оптимизации в реальных сценариях.
+Интерактивная симуляция системы управления лифтами
 
 ### 🚀 Ключевые возможности
 
@@ -32,7 +32,7 @@
 
 ### 🛠️ Технический стек
 
-- **Frontend**: React 18 + TypeScript
+- **Frontend**: React 19 + TypeScript
 - **Стилизация**: CSS Modules с CSS Grid и Flexbox
 - **Анимации**: CSS Transforms для плавного движения лифтов
 - **Тестирование**: Vitest для unit-тестов
@@ -81,7 +81,7 @@
 
 ### 📋 Project Description
 
-Interactive elevator management system simulation with realistic logic and modern web interface. The project demonstrates the application of React, TypeScript, and optimization algorithms in real-world scenarios.
+Interactive elevator management system simulation
 
 ### 🚀 Key Features
 
@@ -107,7 +107,7 @@ Interactive elevator management system simulation with realistic logic and moder
 
 ### 🛠️ Technical Stack
 
-- **Frontend**: React 18 + TypeScript
+- **Frontend**: React 19 + TypeScript
 - **Styling**: CSS Modules with CSS Grid and Flexbox
 - **Animations**: CSS Transforms for smooth elevator movement
 - **Testing**: Vitest for unit tests
@@ -153,9 +153,6 @@ Interactive elevator management system simulation with realistic logic and moder
 ### 🚀 Getting Started
 
 ```bash
-# Clone repository
-git clone [repository-url]
-
 # Install dependencies
 npm install
 
@@ -175,13 +172,3 @@ npm run build
 - **Smart call assignment** prevents both elevators responding to same call
 - **Real-time updates** with 60fps animations
 - **Memory efficient** with log size limits
-
----
-
-## 📝 License
-
-MIT License - feel free to use this project for learning and portfolio purposes.
-
-## 🤝 Contributing
-
-This is a portfolio project demonstrating modern React development practices. Feel free to fork and experiment!
