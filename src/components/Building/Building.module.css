@@ -4,9 +4,11 @@
 
 .buildingTitle {
   text-align: center;
-  padding: 20px;
+  padding: 12px;
   background: #667eea;
-  border-radius: 12px;
+  border-top-left-radius: 50px;
+  border-top-right-radius: 50px;
+  margin-bottom: 2px;
   color: white;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -40,11 +42,8 @@
 */
 .buildingContainer {
   position: relative;
-  background: #fff;
-  border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   overflow: hidden;
-  border: 2px solid #e9ecef;
   display: grid;
   grid-template-columns: 220px 220px 1fr;
   grid-template-rows: repeat(var(--total-floors), var(--floor-height));
@@ -57,12 +56,11 @@
   z-index: 2;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2px;
 }
 
 .elevatorShaft {
   position: relative;
-  background: #667eea;
+  background: #7f86b1;
   border: 2px solid #1a252f;
   border-radius: 4px;
   margin: 2px;
@@ -73,7 +71,6 @@
   grid-row: 1 / -1;
   position: relative;
   z-index: 1;
-  border-right: 3px solid #dee2e6;
   display: grid;
   grid-template-rows: repeat(var(--total-floors), var(--floor-height));
 }

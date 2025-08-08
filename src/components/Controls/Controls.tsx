@@ -29,23 +29,6 @@ const Controls: React.FC<ControlsProps> = ({
   return (
     <div className={styles.controls}>
       <button
-        onClick={() => {
-          setIsRunning(!isRunning);
-          if (!isRunning) {
-            setAutoSpawn(false);
-          }
-        }}
-        className={styles.controlButton}
-      >
-        {isRunning ? '⏸️ Пауза' : '▶️ Продолжить'}
-      </button>
-      <button onClick={spawnRandomPassenger} className={styles.controlButton}>
-        🎲 Вызвать лифт
-      </button>
-      <button onClick={clearLog} className={styles.controlButton}>
-        🗑️ Очистить лог
-      </button>
-      <button
         onClick={() => toggleElevator('elevator-1')}
         className={`${styles.controlButton} ${!building.elevators[0].isEnabled ? styles.disabled : ''}`}
         title="Переключить лифт 1"
@@ -58,6 +41,23 @@ const Controls: React.FC<ControlsProps> = ({
         title="Переключить лифт 2"
       >
         {building.elevators[1].isEnabled ? '⚡ Лифт 2 ВКЛ' : '🚫 Лифт 2 ВЫКЛ'}
+      </button>
+      <button onClick={spawnRandomPassenger} className={styles.controlButton}>
+        🎲 Вызвать лифт
+      </button>
+      <button onClick={clearLog} className={styles.controlButton}>
+        🗑️ Очистить лог
+      </button>
+      <button
+        onClick={() => {
+          setIsRunning(!isRunning);
+          if (!isRunning) {
+            setAutoSpawn(false);
+          }
+        }}
+        className={styles.controlButton}
+      >
+        {isRunning ? '⏸️ Пауза' : '▶️ Продолжить'}
       </button>
       <button
         onClick={() => setAutoSpawn(!autoSpawn)}
