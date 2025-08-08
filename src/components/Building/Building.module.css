@@ -4,9 +4,8 @@
 
 .buildingTitle {
   text-align: center;
-  margin-bottom: 30px;
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   border-radius: 12px;
   color: white;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -33,15 +32,11 @@
   backdrop-filter: blur(10px);
 }
 
-:root {
-  --total-floors: 9;
-  --floor-height: 100px;
-}
-
 /*
   Используем CSS Grid для синхронизации этажей и шахт лифтов по вертикали.
   grid-template-rows: repeat(var(--total-floors), var(--floor-height)) — создаёт столько строк, сколько этажей, каждая по var(--floor-height).
   grid-template-columns: 220px 220px 1fr — две колонки для шахт лифтов, третья для этажей.
+  CSS переменные определены в index.css и синхронизируются в App.tsx
 */
 .buildingContainer {
   position: relative;
@@ -67,7 +62,7 @@
 
 .elevatorShaft {
   position: relative;
-  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+  background: #667eea;
   border: 2px solid #1a252f;
   border-radius: 4px;
   margin: 2px;

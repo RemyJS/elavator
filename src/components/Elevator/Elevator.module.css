@@ -1,24 +1,11 @@
 /* Контейнер лифта */
 .elevatorContainer {
-  grid-column: 1;
-  grid-row: 1 / -1;
   position: relative;
-  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
-  border-left: 3px solid #dee2e6;
-  display: grid;
-  grid-template-rows: repeat(var(--total-floors), var(--floor-height));
-  align-items: center;
-  justify-items: center;
-}
-
-/* Wrapper для анимации */
-.elevatorWrapper {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
-  transition: grid-row 1s ease-in-out;
 }
 
 /* Корпус лифта */
@@ -40,7 +27,7 @@
 }
 
 .elevator.disabled {
-  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  background: #6c757d;
   border-color: #495057;
   opacity: 0.7;
   filter: grayscale(50%);

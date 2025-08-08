@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useElevator } from './hooks/useElevator';
 import Building from './components/Building';
-import LogTable, { type LogEntry, type SortConfig } from './components/LogTable';
+import LogTable, { type LogEntry } from './components/LogTable';
+import Controls from './components/Controls';
+import Instructions from './components/Instructions';
 import { BUILDING_CONFIG } from './utils/constants';
 import type { Passenger } from './types/elevator';
 import styles from './App.module.css';
@@ -9,7 +11,6 @@ import { generateLogId } from './utils/helpers';
 
 function App() {
   const [passengerLog, setPassengerLog] = useState<LogEntry[]>([]);
-  const [sort, setSort] = useState<SortConfig>({ field: 'order', direction: 'asc' });
   const [autoSpawn, setAutoSpawn] = useState(false);
   const [autoSpawnInterval, setAutoSpawnInterval] = useState(1000); // Интервал в мс
   const [averageTravelTime, setAverageTravelTime] = useState<number>(0);
@@ -76,93 +77,24 @@ function App() {
   return (
     <div className={styles.appLayout}>
       <div className={styles.logTableContainer}>
-        <div className={styles.instructions}>
-          <div className={styles.controls}>
-            <button
-              onClick={() => {
-                setIsRunning(!isRunning);
-                if (!isRunning) {
-                  setAutoSpawn(false);
-                }
-              }}
-              className={styles.controlButton}
-            >
-              {isRunning ? '⏸️ Пауза' : '▶️ Продолжить'}
-            </button>
-            <button onClick={spawnRandomPassenger} className={styles.controlButton}>
-              🎲 Добавить пассажира
-            </button>
-            <button
-              onClick={() => setAutoSpawn(!autoSpawn)}
-              className={`${styles.controlButton} ${autoSpawn ? styles.active : ''}`}
-            >
-              {autoSpawn ? '🔄 Авто ВКЛ' : '⏹️ Авто ВЫКЛ'}
-            </button>
-            {autoSpawn && (
-              <select
-                value={autoSpawnInterval}
-                onChange={(e) => setAutoSpawnInterval(Number(e.target.value))}
-                className={styles.selectControl}
-              >
-                <option value={500}>⚡ Быстро (0.5с)</option>
-                <option value={1000}>🚶 Обычно (1с)</option>
-                <option value={2000}>🐌 Медленно (2с)</option>
-                <option value={3000}>🦥 Очень медленно (3с)</option>
-              </select>
-            )}
-            <button
-              onClick={() => {
-                setPassengerLog([]);
-                setAverageTravelTime(0);
-              }}
-              className={styles.controlButton}
-              title="Очистить лог"
-            >
-              🗑️ Очистить лог
-            </button>
-            <button
-              onClick={() => toggleElevator('elevator-1')}
-              className={`${styles.controlButton} ${!building.elevators[0].isEnabled ? styles.disabled : ''}`}
-              title="Переключить лифт 1"
-            >
-              {building.elevators[0].isEnabled ? '⚡ Лифт 1 ВКЛ' : '🚫 Лифт 1 ВЫКЛ'}
-            </button>
-            <button
-              onClick={() => toggleElevator('elevator-2')}
-              className={`${styles.controlButton} ${!building.elevators[1].isEnabled ? styles.disabled : ''}`}
-              title="Переключить лифт 2"
-            >
-              {building.elevators[1].isEnabled ? '⚡ Лифт 2 ВКЛ' : '🚫 Лифт 2 ВЫКЛ'}
-            </button>
-          </div>
-          <h3>Управление:</h3>
-          <p>• Нажмите ➕ на этаже для добавления пассажира</p>
-          <p>• Лифт автоматически подбирает и развозит пассажиров</p>
-          <p>• Максимум 10 пассажиров на этаже, 5 в лифте</p>
-          <p>• Лог хранит последние 100 записей для производительности</p>
-          <p>• Используйте кнопки для автоматической работы</p>
-
-          <h4>Алгоритм лифта:</h4>
-          <p>
-            • <strong>Направление:</strong> Лифт выбирает ближайшую цель в текущем направлении
-          </p>
-          <p>
-            • <strong>Попутчики:</strong> Подбирает пассажиров, идущих в том же направлении
-          </p>
-          <p>
-            • <strong>Очереди:</strong> Сначала развозит пассажиров, потом отвечает на вызовы
-          </p>
-          <p>
-            • <strong>Смена направления:</strong> Когда цели в одном направлении закончились
-          </p>
-        </div>
-        <div className={styles.logStats}>
-          <span>📊 Лог: {passengerLog.length} записей</span>
-          {averageTravelTime > 0 && <span>⏱️ Среднее время: {averageTravelTime}с</span>}
-        </div>
-        <LogTable log={passengerLog} sort={sort} setSort={setSort} />
+        <Controls
+          isRunning={isRunning}
+          setIsRunning={setIsRunning}
+          spawnRandomPassenger={spawnRandomPassenger}
+          autoSpawn={autoSpawn}
+          setAutoSpawn={setAutoSpawn}
+          autoSpawnInterval={autoSpawnInterval}
+          setAutoSpawnInterval={setAutoSpawnInterval}
+          toggleElevator={toggleElevator}
+          building={building}
+          clearLog={() => {
+            setPassengerLog([]);
+          }}
+        />
+        <LogTable log={passengerLog} averageTravelTime={averageTravelTime} />
       </div>
       <Building building={building} onCallElevator={callElevator} />
+      <Instructions />
     </div>
   );
 }
