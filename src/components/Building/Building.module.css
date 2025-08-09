@@ -73,4 +73,5 @@
   z-index: 1;
   display: grid;
   grid-template-rows: repeat(var(--total-floors), var(--floor-height));
+  background-color: #fff;
 }

@@ -26,8 +26,8 @@ export const getFloorColor = (floorNumber: number): string => {
 // Цвет фона этажа с прозрачностью 30% (4d)
 export const getFloorBackgroundColor = (floorNumber: number): string => {
   const baseColor = getFloorColor(floorNumber);
-  // Добавляем прозрачность 30% (4d) к базовому цвету
-  return baseColor + '4d';
+  // Добавляем прозрачность 50% (80) к базовому цвету
+  return baseColor + '80';
 };
 
 export const getRandomTargetFloor = (currentFloor: number): number => {
