@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { getTravelTimeEmoji } from '../../utils/helpers';
 import styles from './LogTable.module.css';
 
@@ -14,11 +14,23 @@ export interface LogEntry {
 
 export interface LogTableProps {
   log: LogEntry[];
-  averageTravelTime: number;
 }
 
-const LogTable: React.FC<LogTableProps> = ({ log, averageTravelTime }) => {
+const LogTable: React.FC<LogTableProps> = ({ log }) => {
   const tbodyRef = useRef<HTMLDivElement>(null);
+  const [lastAverageTime, setLastAverageTime] = useState<number>(0);
+
+  // Вычисляем среднее время каждые 20 записей (20, 40, 60, 80, 100...)
+  const averageTravelTime = useMemo(() => {
+    if (log.length >= 20 && log.length % 20 === 0) {
+      const newAverage = Math.round(
+        log.reduce((sum, entry) => sum + entry.travelTime, 0) / log.length,
+      );
+      setLastAverageTime(newAverage);
+      return newAverage;
+    }
+    return lastAverageTime;
+  }, [log, lastAverageTime]);
 
   // Автоскролл к последним записям при добавлении новых
   useEffect(() => {
