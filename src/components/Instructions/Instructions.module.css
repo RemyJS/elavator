@@ -28,3 +28,14 @@
   margin: 0 0 6px 0;
   font-size: 13px;
 }
+
+.instructionsContent {
+  line-height: 1.6;
+  white-space: pre-line;
+  font-size: 13px;
+}
+
+.instructionsContent strong {
+  color: #3b82f6;
+  font-weight: 600;
+}

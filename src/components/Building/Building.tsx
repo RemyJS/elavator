@@ -4,6 +4,7 @@ import { BUILDING_CONFIG } from '../../utils/constants';
 import Floor from '../Floor';
 import Elevator from '../Elevator';
 import styles from './Building.module.css';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface BuildingProps {
   building: BuildingState;
@@ -11,6 +12,8 @@ interface BuildingProps {
 }
 
 const Building: React.FC<BuildingProps> = ({ building, onCallElevator }) => {
+  const { t } = useLanguage();
+
   // Подсчитываем общее количество пассажиров во всех лифтах
   const totalPassengersInElevators = building.elevators.reduce(
     (total, elevator) => total + elevator.passengers.length,
@@ -21,10 +24,12 @@ const Building: React.FC<BuildingProps> = ({ building, onCallElevator }) => {
     <div className={styles.building}>
       <div className={styles.buildingTitle}>
         <div className={styles.buildingStats}>
-          <span>Всего пассажиров: {building.statistics.totalPassengers}</span>
-          <h2>🏢 Симулятор лифта</h2>
           <span>
-            Пассажиров в лифтах: {totalPassengersInElevators}/
+            {t.buildingStats.totalPassengers}: {building.statistics.totalPassengers}
+          </span>
+          <h2>{t.headers.buildingTitle}</h2>
+          <span>
+            {t.buildingStats.passengersInElevators}: {totalPassengersInElevators}/
             {BUILDING_CONFIG.MAX_PASSENGERS_IN_ELEVATOR * building.elevators.length}
           </span>
         </div>

@@ -1,5 +1,6 @@
 import type { BuildingState } from '../../types/elevator';
 import styles from './Controls.module.css';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface ControlsProps {
   isRunning: boolean;
@@ -26,27 +27,32 @@ const Controls: React.FC<ControlsProps> = ({
   building,
   clearLog,
 }) => {
+  const { t } = useLanguage();
   return (
     <div className={styles.controls}>
       <button
         onClick={() => toggleElevator('elevator-1')}
         className={`${styles.controlButton} ${!building.elevators[0].isEnabled ? styles.disabled : ''}`}
-        title="Переключить лифт 1"
+        title={
+          building.elevators[0].isEnabled ? t.controls.disableElevator : t.controls.enableElevator
+        }
       >
-        {building.elevators[0].isEnabled ? '⚡ Лифт 1 ВКЛ' : '🚫 Лифт 1 ВЫКЛ'}
+        {building.elevators[0].isEnabled ? t.controls.elevator1On : t.controls.elevator1Off}
       </button>
       <button
         onClick={() => toggleElevator('elevator-2')}
         className={`${styles.controlButton} ${!building.elevators[1].isEnabled ? styles.disabled : ''}`}
-        title="Переключить лифт 2"
+        title={
+          building.elevators[1].isEnabled ? t.controls.disableElevator : t.controls.enableElevator
+        }
       >
-        {building.elevators[1].isEnabled ? '⚡ Лифт 2 ВКЛ' : '🚫 Лифт 2 ВЫКЛ'}
+        {building.elevators[1].isEnabled ? t.controls.elevator2On : t.controls.elevator2Off}
       </button>
       <button onClick={spawnRandomPassenger} className={styles.controlButton}>
-        🎲 Вызвать лифт
+        {t.controls.addRandomPassenger}
       </button>
       <button onClick={clearLog} className={styles.controlButton}>
-        🗑️ Очистить лог
+        {t.controls.clearLog}
       </button>
       <button
         onClick={() => {
@@ -57,13 +63,13 @@ const Controls: React.FC<ControlsProps> = ({
         }}
         className={styles.controlButton}
       >
-        {isRunning ? '⏸️ Пауза' : '▶️ Продолжить'}
+        {isRunning ? t.controls.pause : t.controls.resume}
       </button>
       <button
         onClick={() => setAutoSpawn(!autoSpawn)}
         className={`${styles.controlButton} ${autoSpawn ? styles.active : ''}`}
       >
-        {autoSpawn ? '🔄 Авто ВКЛ' : '⏹️ Авто ВЫКЛ'}
+        {autoSpawn ? t.controls.autoSpawn : t.controls.autoSpawnOff}
       </button>
       <select
         value={autoSpawnInterval}
@@ -71,10 +77,10 @@ const Controls: React.FC<ControlsProps> = ({
         className={styles.selectControl}
         disabled={!autoSpawn}
       >
-        <option value={500}>⚡ Быстро (0.5с)</option>
-        <option value={1000}>🚶 Обычно (1с)</option>
-        <option value={2000}>🐌 Медленно (2с)</option>
-        <option value={3000}>🦥 Очень медленно (3с)</option>
+        <option value={500}>{t.controls.speedOptions.fast}</option>
+        <option value={1000}>{t.controls.speedOptions.normal}</option>
+        <option value={2000}>{t.controls.speedOptions.slow}</option>
+        <option value={3000}>{t.controls.speedOptions.verySlow}</option>
       </select>
     </div>
   );

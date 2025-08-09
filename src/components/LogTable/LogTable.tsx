@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { getTravelTimeEmoji } from '../../utils/helpers';
 import styles from './LogTable.module.css';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export interface LogEntry {
   id: string;
@@ -17,6 +18,7 @@ export interface LogTableProps {
 }
 
 const LogTable: React.FC<LogTableProps> = ({ log }) => {
+  const { t } = useLanguage();
   const tbodyRef = useRef<HTMLDivElement>(null);
   const [lastAverageTime, setLastAverageTime] = useState<number>(0);
 
@@ -46,21 +48,28 @@ const LogTable: React.FC<LogTableProps> = ({ log }) => {
   return (
     <div className={styles.logTableContainer}>
       <div className={styles.logStats}>
-        <span>📊 Лог: {log.length} записей</span>
-        {averageTravelTime > 0 && <span>⏱️ Среднее время: {averageTravelTime}с</span>}
+        <span>
+          {t.statistics.log}: {log.length} {t.statistics.records}
+        </span>
+        {averageTravelTime > 0 && (
+          <span>
+            {t.statistics.averageTime}: {averageTravelTime}
+            {t.statistics.seconds}
+          </span>
+        )}
       </div>
-      <h3>Статистика перевозок</h3>
+      <h3>{t.table.transportStatistics}</h3>
       <div className={styles.logTable}>
         <div className={styles.tableHeader}>
-          <div className={styles.headerCell}>#</div>
-          <div className={styles.headerCell}>ID</div>
-          <div className={styles.headerCell}>Откуда</div>
-          <div className={styles.headerCell}>Куда</div>
-          <div className={styles.headerCell}>Время в пути, c</div>
+          <div className={styles.headerCell}>{t.table.number}</div>
+          <div className={styles.headerCell}>{t.table.id}</div>
+          <div className={styles.headerCell}>{t.table.from}</div>
+          <div className={styles.headerCell}>{t.table.to}</div>
+          <div className={styles.headerCell}>{t.table.travelTime}</div>
         </div>
         <div className={styles.tableBody} ref={tbodyRef}>
           {log.map((entry, index) => {
-            const emoji = getTravelTimeEmoji(entry.travelTime);
+            const emoji = getTravelTimeEmoji(entry.travelTime, t.emojis);
             const isNewEntry = index === log.length - 1; // Последняя запись - новая
 
             return (
@@ -73,7 +82,8 @@ const LogTable: React.FC<LogTableProps> = ({ log }) => {
                 <div className={styles.tableCell}>{entry.from}</div>
                 <div className={styles.tableCell}>{entry.to}</div>
                 <div className={styles.tableCell}>
-                  {entry.travelTime}с {emoji}
+                  {entry.travelTime}
+                  {t.statistics.seconds} {emoji}
                 </div>
               </div>
             );
