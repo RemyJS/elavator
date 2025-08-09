@@ -116,6 +116,24 @@ export const removeCallAssignment = (
   };
 };
 
+// Функция для очистки пустых назначений (когда на этаже нет пассажиров)
+export const cleanupEmptyAssignments = (building: BuildingState): BuildingState => {
+  let updatedBuilding = building;
+
+  // Проверяем каждый лифт
+  building.elevators.forEach((elevator) => {
+    elevator.assignedFloors.forEach((floorNumber) => {
+      const floor = building.floors.get(floorNumber);
+      // Если на этаже нет ожидающих пассажиров, убираем назначение
+      if (floor && floor.waitingPassengers.length === 0) {
+        updatedBuilding = removeCallAssignment(updatedBuilding, floorNumber, elevator.id);
+      }
+    });
+  });
+
+  return updatedBuilding;
+};
+
 export const toggleElevator = (building: BuildingState, elevatorId: string): BuildingState => {
   const elevator = building.elevators.find((e) => e.id === elevatorId);
   if (!elevator) return building;
@@ -349,8 +367,11 @@ export const useElevator = (onPassengerArrived?: (p: Passenger) => void) => {
         }
       });
 
+      // Очищаем пустые назначения перед обработкой лифтов
+      currentBuilding = cleanupEmptyAssignments(currentBuilding);
+
       // Обрабатываем каждый лифт отдельно
-      elevators.forEach((elevator) => {
+      currentBuilding.elevators.forEach((elevator) => {
         const currentFloor = elevator.currentFloor;
         let direction = elevator.direction;
         let nextFloor = currentFloor;
@@ -377,7 +398,7 @@ export const useElevator = (onPassengerArrived?: (p: Passenger) => void) => {
 
         // === Посадка на текущем этаже (только для включенных лифтов) ===
         if (elevator.isEnabled) {
-          const currentFloorData = floors.get(currentFloor);
+          const currentFloorData = currentBuilding.floors.get(currentFloor);
           if (currentFloorData && currentFloorData.waitingPassengers.length > 0) {
             const availableSpace =
               BUILDING_CONFIG.MAX_PASSENGERS_IN_ELEVATOR - elevator.passengers.length;

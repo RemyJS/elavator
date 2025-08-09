@@ -9,6 +9,7 @@ import {
   dropOffPassengers,
   moveElevator,
   updateElevatorState,
+  cleanupEmptyAssignments,
 } from './useElevator';
 
 // Мок-данные для тестов
@@ -245,6 +246,104 @@ describe('Elevator Pure Functions', () => {
       expect(updatedElevator.direction).toBe('up');
       expect(updatedElevator.isMoving).toBe(true);
       expect(updatedElevator.currentFloor).toBe(1); // Не изменилось
+    });
+  });
+
+  describe('cleanupEmptyAssignments', () => {
+    it('should remove assignments for floors with no waiting passengers', () => {
+      // Создаем здание с назначениями на пустые этажи
+      const testBuilding = createMockBuilding();
+
+      // Добавляем назначения на этажи 3 и 6
+      testBuilding.elevators[0].assignedFloors = [3, 6];
+      testBuilding.elevators[1].assignedFloors = [4, 7];
+
+      // Устанавливаем assignedCalls на этажах
+      testBuilding.floors.get(3)!.assignedCalls = ['elevator-1'];
+      testBuilding.floors.get(4)!.assignedCalls = ['elevator-2'];
+      testBuilding.floors.get(6)!.assignedCalls = ['elevator-1'];
+      testBuilding.floors.get(7)!.assignedCalls = ['elevator-2'];
+
+      const result = cleanupEmptyAssignments(testBuilding);
+
+      // Проверяем, что назначения удалены
+      expect(result.elevators[0].assignedFloors).toEqual([]);
+      expect(result.elevators[1].assignedFloors).toEqual([]);
+      expect(result.floors.get(3)!.assignedCalls).toEqual([]);
+      expect(result.floors.get(4)!.assignedCalls).toEqual([]);
+      expect(result.floors.get(6)!.assignedCalls).toEqual([]);
+      expect(result.floors.get(7)!.assignedCalls).toEqual([]);
+    });
+
+    it('should keep assignments for floors with waiting passengers', () => {
+      // Создаем здание с пассажирами на этаже 3
+      const testBuilding = createMockBuilding();
+      const passenger = createMockPassenger('passenger-1', 3, 7);
+
+      // Добавляем пассажира на этаж 3
+      testBuilding.floors.get(3)!.waitingPassengers = [passenger];
+      testBuilding.floors.get(3)!.isCalling = true;
+
+      // Добавляем назначения
+      testBuilding.elevators[0].assignedFloors = [3, 6];
+      testBuilding.floors.get(3)!.assignedCalls = ['elevator-1'];
+      testBuilding.floors.get(6)!.assignedCalls = ['elevator-1'];
+
+      const result = cleanupEmptyAssignments(testBuilding);
+
+      // Проверяем, что назначение на этаж 3 сохранено, а на этаж 6 удалено
+      expect(result.elevators[0].assignedFloors).toEqual([3]);
+      expect(result.floors.get(3)!.assignedCalls).toEqual(['elevator-1']);
+      expect(result.floors.get(6)!.assignedCalls).toEqual([]);
+    });
+
+    it('should handle multiple elevators with mixed assignments', () => {
+      const testBuilding = createMockBuilding();
+      const passenger1 = createMockPassenger('passenger-1', 3, 7);
+      const passenger2 = createMockPassenger('passenger-2', 5, 9);
+
+      // Добавляем пассажиров на разные этажи
+      testBuilding.floors.get(3)!.waitingPassengers = [passenger1];
+      testBuilding.floors.get(3)!.isCalling = true;
+      testBuilding.floors.get(5)!.waitingPassengers = [passenger2];
+      testBuilding.floors.get(5)!.isCalling = true;
+
+      // Назначаем лифты
+      testBuilding.elevators[0].assignedFloors = [3, 6]; // 3 с пассажирами, 6 пустой
+      testBuilding.elevators[1].assignedFloors = [4, 5]; // 4 пустой, 5 с пассажирами
+
+      testBuilding.floors.get(3)!.assignedCalls = ['elevator-1'];
+      testBuilding.floors.get(4)!.assignedCalls = ['elevator-2'];
+      testBuilding.floors.get(5)!.assignedCalls = ['elevator-2'];
+      testBuilding.floors.get(6)!.assignedCalls = ['elevator-1'];
+
+      const result = cleanupEmptyAssignments(testBuilding);
+
+      // Проверяем результаты
+      expect(result.elevators[0].assignedFloors).toEqual([3]); // Только этаж с пассажирами
+      expect(result.elevators[1].assignedFloors).toEqual([5]); // Только этаж с пассажирами
+
+      expect(result.floors.get(3)!.assignedCalls).toEqual(['elevator-1']);
+      expect(result.floors.get(4)!.assignedCalls).toEqual([]);
+      expect(result.floors.get(5)!.assignedCalls).toEqual(['elevator-2']);
+      expect(result.floors.get(6)!.assignedCalls).toEqual([]);
+    });
+
+    it('should return unchanged building when no empty assignments', () => {
+      const testBuilding = createMockBuilding();
+      const passenger = createMockPassenger('passenger-1', 3, 7);
+
+      // Добавляем пассажира и назначение
+      testBuilding.floors.get(3)!.waitingPassengers = [passenger];
+      testBuilding.floors.get(3)!.isCalling = true;
+      testBuilding.elevators[0].assignedFloors = [3];
+      testBuilding.floors.get(3)!.assignedCalls = ['elevator-1'];
+
+      const result = cleanupEmptyAssignments(testBuilding);
+
+      // Проверяем, что ничего не изменилось
+      expect(result.elevators[0].assignedFloors).toEqual([3]);
+      expect(result.floors.get(3)!.assignedCalls).toEqual(['elevator-1']);
     });
   });
 });

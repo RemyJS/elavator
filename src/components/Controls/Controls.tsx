@@ -1,6 +1,6 @@
 import type { BuildingState } from '../../types/elevator';
 import styles from './Controls.module.css';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface ControlsProps {
   isRunning: boolean;

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { getTravelTimeEmoji } from '../../utils/helpers';
 import styles from './LogTable.module.css';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 
 export interface LogEntry {
   id: string;
@@ -69,7 +69,7 @@ const LogTable: React.FC<LogTableProps> = ({ log }) => {
         </div>
         <div className={styles.tableBody} ref={tbodyRef}>
           {log.map((entry, index) => {
-            const emoji = getTravelTimeEmoji(entry.travelTime, t.emojis);
+            const emoji = getTravelTimeEmoji(entry.travelTime);
             const isNewEntry = index === log.length - 1; // Последняя запись - новая
 
             return (

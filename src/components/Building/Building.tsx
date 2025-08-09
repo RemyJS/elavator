@@ -4,7 +4,7 @@ import { BUILDING_CONFIG } from '../../utils/constants';
 import Floor from '../Floor';
 import Elevator from '../Elevator';
 import styles from './Building.module.css';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface BuildingProps {
   building: BuildingState;

@@ -1,5 +1,5 @@
 import styles from './Instructions.module.css';
-import { useLanguage } from '../../contexts/LanguageContext';
+import { useLanguage } from '../../hooks/useLanguage';
 import LanguageSwitcher from '../LanguageSwitcher';
 
 const Instructions: React.FC = () => {
