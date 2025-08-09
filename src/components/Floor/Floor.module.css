@@ -25,23 +25,16 @@
   min-width: 80px;
 }
 
-.floorShaft {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 120px;
-}
-
 .queueArea {
   display: flex;
-  gap: 8px;
+  gap: 5px;
   align-items: center;
   flex-wrap: wrap;
 }
 
 .arrivedArea {
   display: flex;
-  gap: 8px;
+  gap: 5px;
   align-items: center;
   flex: 1;
   justify-content: flex-end;

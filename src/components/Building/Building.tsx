@@ -20,9 +20,9 @@ const Building: React.FC<BuildingProps> = ({ building, onCallElevator }) => {
   return (
     <div className={styles.building}>
       <div className={styles.buildingTitle}>
-        <h2>🏢 Лифт Симулятор</h2>
         <div className={styles.buildingStats}>
           <span>Всего пассажиров: {building.statistics.totalPassengers}</span>
+          <h2>🏢 Симулятор лифта</h2>
           <span>
             Пассажиров в лифтах: {totalPassengersInElevators}/
             {BUILDING_CONFIG.MAX_PASSENGERS_IN_ELEVATOR * building.elevators.length}

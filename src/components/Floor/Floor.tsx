@@ -44,18 +44,16 @@ const Floor: React.FC<FloorProps> = ({ floor, onCallElevator }) => {
           </div>
         </div>
 
-        {/* Середина: шахта, очередь */}
-        <div className={styles.floorShaft}>
-          <div className={styles.queueArea}>
-            {waitingPassengers.slice(0, maxVisiblePassengers).map((passenger) => (
-              <Passenger key={passenger.id} passenger={passenger} variant="waiting" />
-            ))}
-            {waitingPassengers.length > maxVisiblePassengers && (
-              <div className={styles.morePassengers}>
-                +{waitingPassengers.length - maxVisiblePassengers}
-              </div>
-            )}
-          </div>
+        {/* Середина: очередь */}
+        <div className={styles.queueArea}>
+          {waitingPassengers.slice(0, maxVisiblePassengers).map((passenger) => (
+            <Passenger key={passenger.id} passenger={passenger} variant="waiting" />
+          ))}
+          {waitingPassengers.length > maxVisiblePassengers && (
+            <div className={styles.morePassengers}>
+              +{waitingPassengers.length - maxVisiblePassengers}
+            </div>
+          )}
         </div>
 
         {/* Правая часть: прибывшие пассажиры */}
